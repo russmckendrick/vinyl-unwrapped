@@ -10,5 +10,5 @@ unwrapped/*/
 
 # But keep the index.html
 !unwrapped/index.html
-!unwrapped/css/*
-!unwrapped/js/*
+!unwrapped/css/style.css
+!unwrapped/js/chart.js
