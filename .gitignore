@@ -7,8 +7,8 @@ lastfm_*
 # Ignore everything in unwrapped folder
 unwrapped/*
 unwrapped/*/
-unwrapped/css/*
-unwrapped/js/*
 
 # But keep the index.html
 !unwrapped/index.html
+!unwrapped/css/*
+!unwrapped/js/*

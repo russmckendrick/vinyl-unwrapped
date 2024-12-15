@@ -106,12 +106,7 @@ def analyze_collection(data, year=None):
         'records_by_month': records_by_month,
         'top_artists': top_artists_data,
         'recent_additions': sorted(data, key=lambda x: x['date_added'], reverse=True)[:10],
-        'year': year,
-        'genres': dict(genres),
-        'styles': dict(styles),
-        'formats': dict(formats),
-        'labels': dict(labels),
-        'artists': dict(artists)
+        'year': year
     }
 
 def generate_html(stats, lastfm_data=None, template_dir='templates'):
