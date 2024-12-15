@@ -6,11 +6,6 @@
     <title>Vinyl Unwrapped {{ year }}</title>
     <link rel="stylesheet" href="/css/style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-        // Pass the data to JavaScript
-        const monthlyData = {{ stats.monthly_data|tojson|safe }};
-        const months = {{ stats.months|tojson|safe }};
-    </script>
 </head>
 <body>
     <div class="container">
@@ -19,55 +14,49 @@
         </header>
 
         <div class="stats-overview">
-            <div class="total-records">
-                <h2>{{ stats.total_records }}</h2>
-                <p>Records Added</p>
+            <div class="stat-cards">
+                <div class="total-records">
+                    <h2>{{ stats.total_records }}</h2>
+                    <p>Records Added</p>
+                </div>
+                {% if lastfm_data %}
+                <div class="total-scrobbles">
+                    <h2>{{ "{:,}".format(lastfm_data.total_scrobbles) }}</h2>
+                    <p>Total Scrobbles</p>
+                </div>
+                {% endif %}
             </div>
-            {% if lastfm_data %}
-            <div class="total-scrobbles">
-                <h2>{{ lastfm_data.total_scrobbles }}</h2>
-                <p>Total Scrobbles</p>
-            </div>
-            {% endif %}
             <div class="chart-container">
                 <canvas id="monthlyChart"></canvas>
-                <script>
-                    // Store chart data in a global object to avoid conflicts
-                    window.chartData = {
-                        months: {{ stats.months|tojson }},
-                        monthlyData: {{ stats.monthly_data|tojson }},
-                        monthIds: {{ stats.month_ids|tojson|safe }}
-                    };
-                </script>
             </div>
         </div>
 
-        {% if lastfm_data %}
         <div class="stats-grid">
+            {% if lastfm_data %}
             <div class="stat-card">
-                <h3>Top Artists (Last.fm)</h3>
+                <h3>Most Listened Artists</h3>
                 <ul class="stat-list">
                     {% for artist, count in lastfm_data.top_artists %}
                     <li>
                         <span class="stat-label">{{ artist }}</span>
-                        <span class="stat-value">{{ count }}</span>
+                        <span class="stat-value">{{ "{:,}".format(count) }}</span>
                     </li>
                     {% endfor %}
                 </ul>
             </div>
 
             <div class="stat-card">
-                <h3>Top Albums (Last.fm)</h3>
+                <h3>Most Played Albums</h3>
                 <ul class="stat-list">
                     {% for album, count in lastfm_data.top_albums %}
                     <li>
                         <span class="stat-label">{{ album }}</span>
-                        <span class="stat-value">{{ count }}</span>
+                        <span class="stat-value">{{ "{:,}".format(count) }}</span>
                     </li>
                     {% endfor %}
                 </ul>
             </div>
-        {% endif %}
+            {% endif %}
 
             <div class="stat-card">
                 <h3>Top Genres</h3>
@@ -131,11 +120,11 @@
                         {% endif %}
                         <div class="artist-info">
                             <h4>{{ artist.name }}</h4>
-                            <p class="record-count">{{ artist.count }} records</p>
+                            <p class="record-count">{{ artist.count }} record{% if artist.count > 1 %}s{% endif %}</p>
                             {% if lastfm_data %}
                                 {% for lastfm_artist, lastfm_count in lastfm_data.top_artists %}
                                     {% if lastfm_artist == artist.name %}
-                                    <p class="scrobble-count">{{ lastfm_count }} scrobbles</p>
+                                    <p class="scrobble-count">{{ "{:,}".format(lastfm_count) }} scrobbles</p>
                                     {% endif %}
                                 {% endfor %}
                             {% endif %}
@@ -147,11 +136,11 @@
         </div>
 
         <div class="collection-by-month">
-            <h2>My {{ year }} Additions</h2>
+            <h2>My {{ year }} Collection</h2>
             {% for month in stats.months %}
                 {% if month in stats.records_by_month %}
                 <div id="{{ stats.month_ids[month] }}" class="month-section">
-                    <h3>{{ month }} <span class="record-count">({{ stats.records_by_month[month]|length }} records)</span></h3>
+                    <h3>{{ month }} <span class="record-count">({{ stats.records_by_month[month]|length }} record{% if stats.records_by_month[month]|length > 1 %}s{% endif %})</span></h3>
                     <div class="month-records">
                         <div class="records-grid">
                             {% for record in stats.records_by_month[month] %}
@@ -167,7 +156,7 @@
                                         {% if lastfm_data %}
                                             {% for lastfm_album, lastfm_count in lastfm_data.top_albums %}
                                                 {% if lastfm_album == record.artist[0] + " - " + record.title %}
-                                                <p class="scrobble-count">{{ lastfm_count }} scrobbles</p>
+                                                <p class="scrobble-count">{{ "{:,}".format(lastfm_count) }} scrobbles</p>
                                                 {% endif %}
                                             {% endfor %}
                                         {% endif %}
@@ -189,6 +178,15 @@
             {% endif %}
         </footer>
     </div>
+
+    <script>
+        // Store chart data in a global object to avoid conflicts
+        window.chartData = {
+            months: {{ stats.months|tojson }},
+            monthlyData: {{ stats.monthly_data|tojson }},
+            monthIds: {{ stats.month_ids|tojson|safe }}
+        };
+    </script>
     <script src="/js/charts.js"></script>
 </body>
 </html>
