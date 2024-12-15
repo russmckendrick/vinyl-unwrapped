@@ -90,7 +90,7 @@ def analyze_collection(data, year=None):
                 'count': count,
                 'records': artist_records
             })
-            if len(top_artists_data) == 10:  # Only take top 10 non-Various artists
+            if len(top_artists_data) == 12:  # Only take top 12 non-Various artists
                 break
     
     return {
