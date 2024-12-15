@@ -135,23 +135,19 @@ def generate_html(stats, lastfm_data=None, template_dir='templates'):
     env = Environment(loader=FileSystemLoader(template_dir))
     template = env.get_template('report.html')
     
-    # Create month IDs for navigation
-    month_ids = {month: create_month_id(month) for month in stats['months']}
-    stats['month_ids'] = month_ids
+    # Check for existence of adjacent year folders
+    current_year = stats['year']
+    unwrapped_dir = Path('unwrapped')
+    prev_year_exists = (unwrapped_dir / str(current_year - 1)).exists()
+    next_year_exists = (unwrapped_dir / str(current_year + 1)).exists()
     
-    # Include Last.fm data if available
-    context = {
-        'stats': stats,
-        'lastfm_data': lastfm_data,
-        'year': stats['year'],
-        'generated_date': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    }
-    
-    logger.debug(f"Template context - Last.fm data present: {lastfm_data is not None}")
-    if lastfm_data:
-        logger.debug(f"Last.fm scrobbles in context: {lastfm_data['total_scrobbles']}")
-    
-    return template.render(**context)
+    return template.render(
+        stats=stats,
+        lastfm_data=lastfm_data,
+        current_year=current_year,
+        prev_year_exists=prev_year_exists,
+        next_year_exists=next_year_exists
+    )
 
 def main(year=None, output_path=None, lastfm_data=None):
     # Use current directory if no output path provided

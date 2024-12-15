@@ -233,6 +233,35 @@
         </div>
     </div>
 
+<!-- Pagination -->
+<div class="container mt-5 mb-4">
+    <nav aria-label="Year navigation">
+        <ul class="pagination justify-content-center">
+            {% if prev_year_exists %}
+            <li class="page-item">
+                <a class="page-link" href="../{{ current_year - 1 }}/index.html" aria-label="Previous Year">
+                    <span aria-hidden="true">&laquo; {{ current_year - 1 }}</span>
+                </a>
+            </li>
+            {% endif %}
+            
+            <li class="page-item">
+                <a class="page-link" href="../../index.html" aria-label="Home">
+                    <i class="fas fa-home"></i> Home
+                </a>
+            </li>
+
+            {% if next_year_exists %}
+            <li class="page-item">
+                <a class="page-link" href="../{{ current_year + 1 }}/index.html" aria-label="Next Year">
+                    <span aria-hidden="true">{{ current_year + 1 }} &raquo;</span>
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+</div>
+
     <script>
         // Pass the data to JavaScript
         window.chartData = {
