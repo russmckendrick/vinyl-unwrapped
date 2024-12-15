@@ -12,8 +12,8 @@ load_dotenv()
 
 # Configuration
 USERNAME = os.getenv('DISCOGS_USERNAME', 'russmck')
-YEAR = 2024
-OUTPUT_FILE = "collection_2024.json"
+YEAR = datetime.now().year
+OUTPUT_FILE = f"collection_{YEAR}.json"
 MAX_RETRIES = 3
 RETRY_DELAY = int(os.getenv('DISCOGS_RATE_LIMIT_DELAY', '2'))  # seconds between retries
 
@@ -158,11 +158,24 @@ def save_collection(items):
         json.dump(items, f, indent=2, ensure_ascii=False)
 
 def main():
-    print(f"Fetching {YEAR} collection for user: {USERNAME}")
     try:
+        # Check if collection file already exists
+        if os.path.exists(OUTPUT_FILE):
+            while True:
+                response = input(f"\nCollection file '{OUTPUT_FILE}' already exists.\nWould you like to:\n[1] Use existing file\n[2] Re-generate collection\nChoice (1/2): ").strip()
+                if response in ['1', '2']:
+                    break
+                print("Invalid choice. Please enter 1 or 2.")
+            
+            if response == '1':
+                logger.info(f"Using existing collection file: {OUTPUT_FILE}")
+                return
+        
+        print(f"Fetching {YEAR} collection for user: {USERNAME}")
         items = fetch_collection()
         save_collection(items)
         print(f"Successfully saved {len(items)} items to {OUTPUT_FILE}")
+        
     except Exception as e:
         logger.error(f"Error: {str(e)}")
         raise

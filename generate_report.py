@@ -13,7 +13,11 @@ def load_collection(json_file):
     with open(json_file, 'r') as f:
         return json.load(f)
 
-def analyze_collection(data):
+def analyze_collection(data, year=None):
+    # Use provided year or current year as fallback
+    if year is None:
+        year = datetime.now().year
+        
     # Filter out records without russ.fm URLs
     data = [record for record in data if record['album_uri'] is not None and record['artist_uri'] is not None]
     
@@ -96,7 +100,8 @@ def analyze_collection(data):
         'month_ids': month_ids,
         'records_by_month': records_by_month,
         'top_artists': top_artists_data,
-        'recent_additions': sorted(data, key=lambda x: x['date_added'], reverse=True)[:10]
+        'recent_additions': sorted(data, key=lambda x: x['date_added'], reverse=True)[:10],
+        'year': year
     }
 
 def generate_html(stats, template_dir='templates'):
@@ -105,7 +110,7 @@ def generate_html(stats, template_dir='templates'):
     
     return template.render(
         stats=stats,
-        year=2024,
+        year=stats['year'],
         generated_date=datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     )
 
@@ -126,7 +131,7 @@ def main(year=None):
     collection_data = load_collection(f'collection_{year}.json')
     
     # Analyze collection
-    stats = analyze_collection(collection_data)
+    stats = analyze_collection(collection_data, year)
     
     # Generate HTML report
     html_content = generate_html(stats)

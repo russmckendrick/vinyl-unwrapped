@@ -16,7 +16,6 @@
     <div class="container">
         <header>
             <h1>Vinyl Unwrapped {{ year }}</h1>
-            <p class="subtitle">Your year in vinyl records</p>
         </header>
 
         <div class="stats-overview">
@@ -88,7 +87,7 @@
         </div>
 
         <div class="top-artists">
-            <h2>Your Most Collected Artists</h2>
+            <h2>{{ year }}'s Most Collected Artists</h2>
             <div class="records-grid">
                 {% for artist in stats.top_artists %}
                 <div class="artist-card">
@@ -109,7 +108,7 @@
         </div>
 
         <div class="collection-by-month">
-            <h2>Your {{ year }} Collection</h2>
+            <h2>My {{ year }} Additions</h2>
             {% for month in stats.months %}
                 {% if month in stats.records_by_month %}
                 <div id="{{ stats.month_ids[month] }}" class="month-section">
