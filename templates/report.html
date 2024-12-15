@@ -41,28 +41,33 @@
     <div class="container mt-5">
         <h1 class="text-center mb-5">Unwrapped {{ year }}</h1>
 
-        <div class="row justify-content-center mb-5">
-            <div class="col-md-4">
-                <div class="card bg-dark text-white h-100 mb-4">
+        <div class="row justify-content-center mb-4">
+            <div class="col-{% if lastfm_data %}md-6{% else %}md-12{% endif %}">
+                <div class="card border-0 rounded-4 h-100" style="background-color: #198754;">
                     <div class="card-body text-center">
-                        <h5 class="card-title">Records Added</h5>
-                        <p class="card-text display-4 text-success">{{ stats.total_records }}</p>
+                        <h5 class="card-title text-white">Records Added</h5>
+                        <p class="card-text display-4 text-white fw-bold">{{ stats.total_records }}</p>
                     </div>
                 </div>
-                {% if lastfm_data %}
-                <div class="card bg-dark text-white h-100">
-                    <div class="card-body text-center">
-                        <h5 class="card-title">Total Scrobbles</h5>
-                        <p class="card-text display-4 text-success">{{ lastfm_data.total_scrobbles }}</p>
-                    </div>
-                </div>
-                {% endif %}
             </div>
-            <div class="col-md-8">
-                <div class="card bg-dark text-white h-100">
+            {% if lastfm_data %}
+            <div class="col-md-6">
+                <div class="card border-0 rounded-4 h-100" style="background-color: #D51007;">
+                    <div class="card-body text-center">
+                        <h5 class="card-title text-white">Total Scrobbles</h5>
+                        <p class="card-text display-4 text-white fw-bold">{{ lastfm_data.total_scrobbles }}</p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="row mb-5">
+            <div class="col-12">
+                <div class="card bg-dark text-white">
                     <div class="card-body">
                         <h5 class="card-title">Albums Added per Month</h5>
-                        <div style="height: 300px;">
+                        <div style="height: 400px;">
                             <canvas id="monthlyChart"></canvas>
                         </div>
                     </div>
