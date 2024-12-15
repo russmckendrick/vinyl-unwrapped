@@ -38,6 +38,33 @@
         .lastfm-text {
             color: #D51007;
         }
+        .lastfm-pill {
+            background: #282828;
+            border-radius: 50px;
+            padding: 0;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            transition: transform 0.2s;
+        }
+        .lastfm-pill:hover {
+            transform: scale(1.02);
+        }
+        .lastfm-pill .artist-name {
+            padding: 10px 20px;
+            flex-grow: 1;
+            text-align: left;
+            color: white;
+        }
+        .lastfm-pill .play-count {
+            background: #D51007;
+            padding: 10px 20px;
+            color: white;
+            font-weight: bold;
+            min-width: 100px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -112,19 +139,27 @@
         </div>
 
         {% if lastfm_data %}
-        <div class="mb-4">
-            <h2 class="h3 mb-4">Most Played Artists on Last.fm</h2>
-            <div class="row row-cols-2 row-cols-md-3 row-cols-lg-5 g-4">
-                {% for artist, plays in lastfm_data.top_artists %}
-                <div class="col">
-                    <div class="card h-100">
-                        <div class="card-body text-center">
-                            <h4 class="h6 mb-2">{{ artist }}</h4>
-                            <p class="scrobble-count mb-0 lastfm-text">{{ plays }} plays</p>
+        <div class="row mb-5">
+            <div class="col-12">
+                <h2 class="mb-4">Most Played Artists on Last.fm</h2>
+                <div class="row">
+                    <div class="col-md-6">
+                        {% for artist in lastfm_data.top_artists[:5] %}
+                        <div class="lastfm-pill">
+                            <div class="artist-name">{{ artist.name }}</div>
+                            <div class="play-count">{{ artist.play_count }} plays</div>
                         </div>
+                        {% endfor %}
+                    </div>
+                    <div class="col-md-6">
+                        {% for artist in lastfm_data.top_artists[5:10] %}
+                        <div class="lastfm-pill">
+                            <div class="artist-name">{{ artist.name }}</div>
+                            <div class="play-count">{{ artist.play_count }} plays</div>
+                        </div>
+                        {% endfor %}
                     </div>
                 </div>
-                {% endfor %}
             </div>
         </div>
         {% endif %}
@@ -209,6 +244,13 @@
             const ctx = document.getElementById('monthlyChart').getContext('2d');
             const { months, monthlyData, monthIds } = window.chartData;
             
+            // Create gradient colors based on data values
+            const maxValue = Math.max(...monthlyData);
+            const colors = monthlyData.map(value => {
+                const intensity = value / maxValue;
+                return `hsl(${Math.floor(intensity * 60)}, 100%, 50%)`; // This creates a red-to-yellow gradient
+            });
+            
             new Chart(ctx, {
                 type: 'bar',
                 data: {
@@ -216,8 +258,8 @@
                     datasets: [{
                         label: 'Records Added',
                         data: monthlyData,
-                        backgroundColor: '#198754',
-                        borderColor: '#198754',
+                        backgroundColor: colors,
+                        borderColor: colors,
                         borderWidth: 1
                     }]
                 },
