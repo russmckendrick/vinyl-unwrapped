@@ -1,4 +1,4 @@
-discogs-client
 python-dotenv
-requests
+discogs-client
 jinja2
+requests

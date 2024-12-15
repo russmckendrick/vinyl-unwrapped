@@ -74,7 +74,7 @@ def analyze_collection(data):
         top_artists_data.append({
             'name': artist,
             'count': count,
-            'records': artist_records
+            'records': artist_records  # Pass the full record data
         })
     
     return {

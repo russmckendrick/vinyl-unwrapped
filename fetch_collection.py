@@ -5,6 +5,7 @@ from datetime import datetime
 from dotenv import load_dotenv
 import discogs_client
 import logging
+import requests
 
 # Load environment variables
 load_dotenv()
@@ -54,11 +55,38 @@ def get_label_info(label):
         return label.get('name', 'Unknown Label')
     return getattr(label, 'name', 'Unknown Label')
 
+def fetch_russ_fm_data():
+    """Fetch image data from russ.fm"""
+    try:
+        response = requests.get('https://www.russ.fm/index.json')
+        response.raise_for_status()
+        return response.json().get('documents', [])
+    except Exception as e:
+        logger.error(f"Error fetching russ.fm data: {str(e)}")
+        return []
+
+def create_image_lookup():
+    """Create lookup tables for cover and artist images"""
+    russ_fm_data = fetch_russ_fm_data()
+    cover_images = {}
+    artist_images = {}
+    
+    for item in russ_fm_data:
+        discogs_id = item.get('discogsRelease')
+        if discogs_id:
+            cover_images[discogs_id] = item.get('coverImage')
+            artist_images[discogs_id] = item.get('artistImage')
+    
+    return cover_images, artist_images
+
 def fetch_collection():
     """Fetch collection items added in 2024"""
     d = get_discogs_client()
     user = d.user(USERNAME)
     collection = user.collection_folders[0].releases
+    
+    # Get image lookups from russ.fm
+    cover_images, artist_images = create_image_lookup()
     
     items_2024 = []
     page = 1
@@ -91,6 +119,8 @@ def fetch_collection():
                             'labels': [get_label_info(label) for label in item.release.labels],
                             'genres': item.release.genres,
                             'styles': item.release.styles if hasattr(item.release, 'styles') else [],
+                            'cover_image': cover_images.get(str(item.release.id)),
+                            'artist_image': artist_images.get(str(item.release.id))
                         }
                         items_2024.append(release_data)
                 except Exception as e:

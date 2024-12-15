@@ -92,7 +92,11 @@
             <div class="records-grid">
                 {% for artist in stats.top_artists %}
                 <div class="artist-card">
+                    {% if artist.records[0].artist_image %}
+                    <img src="{{ artist.records[0].artist_image }}" alt="{{ artist.name }}" width="300" height="300">
+                    {% else %}
                     <img src="https://placehold.co/300x300/1db954/ffffff?text={{ artist.name|replace(' ', '+')|urlencode }}" alt="{{ artist.name }}" width="300" height="300">
+                    {% endif %}
                     <div class="artist-info">
                         <h4>{{ artist.name }}</h4>
                         <p class="record-count">{{ artist.count }} records</p>
