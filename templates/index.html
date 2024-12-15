@@ -115,77 +115,14 @@
 
     <div class="container">
         <div class="grid-container">
-            
-            <a href="2024/" class="year-link">
-                <div class="year-card" style="animation-delay: 0.0s">
-                    <h2>2024 Unwrapped</h2>
-                    <p>Explore my vinyl journey through 2024</p>
+            {% for year, description in years %}
+            <a href="{{ year }}/" class="year-link">
+                <div class="year-card" style="animation-delay: {{ loop.index0 * 0.1 }}s">
+                    <h2>{{ year }} Unwrapped</h2>
+                    <p>{{ description }}</p>
                 </div>
             </a>
-            
-            <a href="2023/" class="year-link">
-                <div class="year-card" style="animation-delay: 0.1s">
-                    <h2>2023 Unwrapped</h2>
-                    <p>Revisit the records of 2023</p>
-                </div>
-            </a>
-            
-            <a href="2022/" class="year-link">
-                <div class="year-card" style="animation-delay: 0.2s">
-                    <h2>2022 Unwrapped</h2>
-                    <p>Look back at 2022's collection</p>
-                </div>
-            </a>
-            
-            <a href="2021/" class="year-link">
-                <div class="year-card" style="animation-delay: 0.30000000000000004s">
-                    <h2>2021 Unwrapped</h2>
-                    <p>Discover the vinyl from 2021</p>
-                </div>
-            </a>
-            
-            <a href="2020/" class="year-link">
-                <div class="year-card" style="animation-delay: 0.4s">
-                    <h2>2020 Unwrapped</h2>
-                    <p>Remember the music of 2020</p>
-                </div>
-            </a>
-            
-            <a href="2019/" class="year-link">
-                <div class="year-card" style="animation-delay: 0.5s">
-                    <h2>2019 Unwrapped</h2>
-                    <p>Relive 2019's additions</p>
-                </div>
-            </a>
-            
-            <a href="2018/" class="year-link">
-                <div class="year-card" style="animation-delay: 0.6000000000000001s">
-                    <h2>2018 Unwrapped</h2>
-                    <p>Explore the sounds of 2018</p>
-                </div>
-            </a>
-            
-            <a href="2017/" class="year-link">
-                <div class="year-card" style="animation-delay: 0.7000000000000001s">
-                    <h2>2017 Unwrapped</h2>
-                    <p>Journey back to 2017</p>
-                </div>
-            </a>
-            
-            <a href="2016/" class="year-link">
-                <div class="year-card" style="animation-delay: 0.8s">
-                    <h2>2016 Unwrapped</h2>
-                    <p>Revisit 2016's collection</p>
-                </div>
-            </a>
-            
-            <a href="2015/" class="year-link">
-                <div class="year-card" style="animation-delay: 0.9s">
-                    <h2>2015 Unwrapped</h2>
-                    <p>Where it all began</p>
-                </div>
-            </a>
-            
+            {% endfor %}
         </div>
     </div>
 

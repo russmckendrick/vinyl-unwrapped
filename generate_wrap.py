@@ -8,6 +8,7 @@ import fetch_lastfm
 import generate_report
 import shutil
 import logging
+from jinja2 import Environment, FileSystemLoader
 
 # Set up logging
 logging.basicConfig(
@@ -55,121 +56,36 @@ def setup_unwrapped_structure():
             logger.info("Updated charts.js in unwrapped directory")
 
 def generate_index_html():
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-    unwrapped_dir = os.path.join(base_dir, 'unwrapped')
+    """Generate the main index.html file"""
+    env = Environment(loader=FileSystemLoader('templates'))
+    template = env.get_template('index.html')
     
-    # Get list of year directories
-    years = []
-    for item in os.listdir(unwrapped_dir):
-        if item.isdigit() and os.path.isdir(os.path.join(unwrapped_dir, item)):
-            years.append(item)
-    years.sort(reverse=True)
+    # Year descriptions
+    year_descriptions = {
+        2024: "Explore my vinyl journey through 2024",
+        2023: "Revisit the records of 2023",
+        2022: "Look back at 2022's collection",
+        2021: "Discover the vinyl from 2021",
+        2020: "Remember the music of 2020",
+        2019: "Relive 2019's additions",
+        2018: "Explore the sounds of 2018",
+        2017: "Journey back to 2017",
+        2016: "Revisit 2016's collection",
+        2015: "Where it all began"
+    }
     
-    # Generate year cards HTML
-    year_cards_html = ""
-    for year in years:
-        year_cards_html += f"""
-            <div class="year-card">
-                <a href="/{year}/" class="year-link">{year} Unwrapped</a>
-            </div>"""
+    # Sort years in descending order
+    years = [(year, year_descriptions[year]) for year in sorted(year_descriptions.keys(), reverse=True)]
     
-    # Create index.html
-    index_path = os.path.join(unwrapped_dir, 'index.html')
-    with open(index_path, 'w') as f:
-        f.write("""<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vinyl Unwrapped - Year by Year Stats</title>
-    <style>
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            line-height: 1.6;
-            margin: 0;
-            padding: 0;
-            background: #0f172a;
-            color: #e2e8f0;
-        }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 2rem;
-        }
-        .header {
-            text-align: center;
-            padding: 4rem 0;
-            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-            border-bottom: 1px solid #334155;
-        }
-        h1 {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-            background: linear-gradient(135deg, #38bdf8 0%, #818cf8 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        .year-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            margin-top: 3rem;
-        }
-        .year-card {
-            background: #1e293b;
-            border-radius: 1rem;
-            padding: 2rem;
-            text-align: center;
-            transition: transform 0.2s ease-in-out;
-            border: 1px solid #334155;
-        }
-        .year-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
-        }
-        .year-link {
-            color: #e2e8f0;
-            text-decoration: none;
-            font-size: 1.5rem;
-            font-weight: bold;
-        }
-        .year-link:hover {
-            color: #38bdf8;
-        }
-        .description {
-            max-width: 800px;
-            margin: 2rem auto;
-            text-align: center;
-            color: #94a3b8;
-        }
-        footer {
-            text-align: center;
-            padding: 2rem;
-            margin-top: 4rem;
-            border-top: 1px solid #334155;
-            color: #94a3b8;
-        }
-    </style>
-</head>
-<body>
-    <div class="header">
-        <div class="container">
-            <h1>Vinyl Unwrapped</h1>
-            <div class="description">
-                A year-by-year journey through my vinyl collection, powered by Discogs data and visualized with modern web technologies.
-            </div>
-        </div>
-    </div>
-    <main class="container">
-        <div class="year-grid">
-            """ + year_cards_html + """
-        </div>
-    </main>
-    <footer>
-        <p>Built with ❤️ using Discogs data</p>
-    </footer>
-</body>
-</html>""")
+    # Generate HTML
+    html_content = template.render(years=years)
+    
+    # Write to file
+    output_file = os.path.join('unwrapped', 'index.html')
+    with open(output_file, 'w') as f:
+        f.write(html_content)
+    
+    logger.info(f"Generated index page: {output_file}")
 
 def main():
     args = parse_args()
