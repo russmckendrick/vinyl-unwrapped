@@ -40,15 +40,12 @@ def analyze_collection(data, year=None):
     # Most common genres and styles
     genres = Counter()
     styles = Counter()
-    artists = Counter()
+    
     for item in data:
         for genre in item['genres']:
             genres[genre] += 1
         for style in item.get('styles', []):
             styles[style] += 1
-        for artist in item['artist']:
-            if artist != "Various":  # Skip counting "Various" as an artist
-                artists[artist] += 1
     
     # Format analysis
     formats = Counter()
@@ -80,15 +77,35 @@ def analyze_collection(data, year=None):
     # Create month IDs for linking
     month_ids = {month: create_month_id(month) for month in months_order}
     
-    # Get top artists with their record counts
+    # Get top artists with their record counts and images
+    artist_counts = {}
+    artist_records = {}
+    artist_images = {}
+    
+    for item in data:
+        artists = item.get('artist', [])
+        if isinstance(artists, str):
+            artists = [artists]
+        artist_key = ' & '.join(artists) if len(artists) > 1 else artists[0]
+        
+        if artist_key not in artist_counts:
+            artist_counts[artist_key] = 0
+            artist_records[artist_key] = []
+            # Use the first artist's image for combined artists
+            artist_images[artist_key] = item.get('artist_image', '')
+            
+        artist_counts[artist_key] += 1
+        artist_records[artist_key].append(item)
+    
+    # Prepare top artists data
     top_artists_data = []
-    for artist, count in artists.most_common():  # Get all artists first
-        if artist != "Various":  # Skip Various Artists
-            artist_records = [record for record in data if artist in record['artist']]
+    for artist, count in sorted(artist_counts.items(), key=lambda x: x[1], reverse=True):
+        if artist.lower() != "various":  # Skip 'Various' artists
             top_artists_data.append({
                 'name': artist,
                 'count': count,
-                'records': artist_records
+                'image': artist_images[artist],
+                'records': artist_records[artist]
             })
             if len(top_artists_data) == 12:  # Only take top 12 non-Various artists
                 break
@@ -111,7 +128,7 @@ def analyze_collection(data, year=None):
         'styles': dict(styles),
         'formats': dict(formats),
         'labels': dict(labels),
-        'artists': dict(artists)
+        'artists': artist_counts  # Use the new artist_counts dictionary
     }
 
 def generate_html(stats, lastfm_data=None, template_dir='templates'):
