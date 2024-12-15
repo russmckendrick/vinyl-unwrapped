@@ -1,3 +1,4 @@
 discogs-client
 python-dotenv
 requests
+jinja2

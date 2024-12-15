@@ -1,1 +1,1 @@
-# vinyl-unwrapped
+# Vinyl Unwrapped

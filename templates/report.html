@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vinyl Unwrapped {{ year }}</title>
+    <link rel="stylesheet" href="static/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Pass the data to JavaScript
+        const monthlyData = {{ stats.monthly_data|tojson|safe }};
+        const months = {{ stats.months|tojson|safe }};
+    </script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Vinyl Unwrapped {{ year }}</h1>
+            <p class="subtitle">Your year in vinyl records</p>
+        </header>
+
+        <div class="stats-overview">
+            <div class="total-records">
+                <h2>{{ stats.total_records }}</h2>
+                <p>Records Added</p>
+            </div>
+            <div class="chart-container">
+                <canvas id="monthlyChart"></canvas>
+                <script>
+                    // Store chart data in a global object to avoid conflicts
+                    window.chartData = {
+                        months: {{ stats.months|tojson }},
+                        monthlyData: {{ stats.monthly_data|tojson }},
+                        monthIds: {{ stats.month_ids|tojson|safe }}
+                    };
+                </script>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Top Genres</h3>
+                <ul class="stat-list">
+                    {% for genre, count in stats.top_genres.items() %}
+                    <li>
+                        <span class="stat-label">{{ genre }}</span>
+                        <span class="stat-value">{{ count }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <div class="stat-card">
+                <h3>Top Styles</h3>
+                <ul class="stat-list">
+                    {% for style, count in stats.top_styles.items() %}
+                    <li>
+                        <span class="stat-label">{{ style }}</span>
+                        <span class="stat-value">{{ count }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <div class="stat-card">
+                <h3>Top Labels</h3>
+                <ul class="stat-list">
+                    {% for label, count in stats.top_labels.items() %}
+                    <li>
+                        <span class="stat-label">{{ label }}</span>
+                        <span class="stat-value">{{ count }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <div class="stat-card">
+                <h3>Formats</h3>
+                <ul class="stat-list">
+                    {% for format, count in stats.top_formats.items() %}
+                    <li>
+                        <span class="stat-label">{{ format }}</span>
+                        <span class="stat-value">{{ count }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+
+        <div class="top-artists">
+            <h2>Your Most Collected Artists</h2>
+            <div class="records-grid">
+                {% for artist in stats.top_artists %}
+                <div class="artist-card">
+                    <img src="https://placehold.co/300x300/1db954/ffffff?text={{ artist.name|replace(' ', '+')|urlencode }}" alt="{{ artist.name }}" width="300" height="300">
+                    <div class="artist-info">
+                        <h4>{{ artist.name }}</h4>
+                        <p class="record-count">{{ artist.count }} records</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="collection-by-month">
+            <h2>Your {{ year }} Collection</h2>
+            {% for month in stats.months %}
+                {% if month in stats.records_by_month %}
+                <div id="{{ stats.month_ids[month] }}" class="month-section">
+                    <h3>{{ month }} <span class="record-count">({{ stats.records_by_month[month]|length }} records)</span></h3>
+                    <div class="records-grid">
+                        {% for record in stats.records_by_month[month] %}
+                        <div class="record-card">
+                            <div class="record-image">
+                                <img src="{{ record.cover_image }}" alt="{{ record.title }}">
+                            </div>
+                            <div class="record-info">
+                                <h4>{{ record.title }}</h4>
+                                <p class="artist-name">{{ record.artist|join(', ') }}</p>
+                                <p class="record-meta">
+                                    {% for format in record.formats %}
+                                    {{ format.name }}{% if not loop.last %}, {% endif %}
+                                    {% endfor %}
+                                </p>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+
+        <footer>
+            <p>Generated on {{ generated_date }}</p>
+        </footer>
+    </div>
+    <script src="static/js/charts.js"></script>
+</body>
+</html>
