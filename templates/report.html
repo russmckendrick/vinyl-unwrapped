@@ -136,26 +136,38 @@
                 <div class="records-grid">
                     {% for record in stats.records_by_month[month] %}
                     <div class="record-card">
-                        <h4><a href="{{ record.album_uri }}" target="_blank">{{ record.title }}</a></h4>
-                        <p class="artist">
-                            {% for artist_name in record.artist %}
-                            {% if not loop.first %} / {% endif %}
-                            <a href="{{ record.artist_uri }}" target="_blank">{{ artist_name }}</a>
-                            {% endfor %}
-                        </p>
-                        <p class="details">
-                            {% for format in record.formats %}
-                            {{ format.name }}
-                            {% if format.descriptions %}({{ format.descriptions|join(', ') }}){% endif %}
-                            {% if not loop.last %}, {% endif %}
-                            {% endfor %}
-                        </p>
-                        <p class="labels">
-                            {% for label in record.labels %}
-                            {% if not loop.first %} / {% endif %}
-                            {{ label }}
-                            {% endfor %}
-                        </p>
+                        {% if record.cover_image %}
+                        <div class="record-image">
+                            <img src="{{ record.cover_image }}" alt="{{ record.title }} cover" loading="lazy">
+                        </div>
+                        {% endif %}
+                        <div class="record-info">
+                            <h4><a href="{{ record.album_uri }}" target="_blank">{{ record.title }}</a></h4>
+                            <p class="artist">
+                                {% for artist_name in record.artist %}
+                                {% if not loop.first %} / {% endif %}
+                                <a href="{{ record.artist_uri }}" target="_blank">
+                                    {% if record.artist_image %}
+                                    <img src="{{ record.artist_image }}" alt="{{ artist_name }}" class="artist-thumbnail" loading="lazy">
+                                    {% endif %}
+                                    {{ artist_name }}
+                                </a>
+                                {% endfor %}
+                            </p>
+                            <p class="details">
+                                {% for format in record.formats %}
+                                {{ format.name }}
+                                {% if format.descriptions %}({{ format.descriptions|join(', ') }}){% endif %}
+                                {% if not loop.last %}, {% endif %}
+                                {% endfor %}
+                            </p>
+                            <p class="labels">
+                                {% for label in record.labels %}
+                                {% if not loop.first %} / {% endif %}
+                                {{ label }}
+                                {% endfor %}
+                            </p>
+                        </div>
                     </div>
                     {% endfor %}
                 </div>
