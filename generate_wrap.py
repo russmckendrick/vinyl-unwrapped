@@ -26,7 +26,7 @@ def main():
     
     # Run generate report
     print(f"Generating report for {year}...")
-    generate_report.main()
+    generate_report.main(year)
     
     print(f"Report generation complete for {year}!")
 

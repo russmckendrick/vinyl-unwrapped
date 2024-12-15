@@ -109,7 +109,11 @@ def generate_html(stats, template_dir='templates'):
         generated_date=datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     )
 
-def main():
+def main(year=None):
+    # Use current year if none provided
+    if year is None:
+        year = datetime.now().year
+    
     # Create necessary directories if they don't exist
     if not os.path.exists('templates'):
         os.makedirs('templates')
@@ -119,7 +123,7 @@ def main():
         os.makedirs('static/js')
     
     # Load collection data
-    collection_data = load_collection('collection_2024.json')
+    collection_data = load_collection(f'collection_{year}.json')
     
     # Analyze collection
     stats = analyze_collection(collection_data)
@@ -128,10 +132,11 @@ def main():
     html_content = generate_html(stats)
     
     # Write the HTML file
-    with open('vinyl_unwrapped_2024.html', 'w') as f:
+    output_file = f'vinyl_unwrapped_{year}.html'
+    with open(output_file, 'w') as f:
         f.write(html_content)
     
-    print("Report generated successfully!")
+    print(f"Report generated successfully for {year}!")
 
 if __name__ == "__main__":
     main()
