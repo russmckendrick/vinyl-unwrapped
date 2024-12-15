@@ -39,31 +39,33 @@
             color: #D51007;
         }
         .lastfm-pill {
-            background: #282828;
-            border-radius: 50px;
-            padding: 0;
-            overflow: hidden;
             display: flex;
-            align-items: center;
-            margin-bottom: 10px;
+            align-items: stretch;
+            border-radius: 2rem;
+            margin-bottom: 0.5rem;
+            overflow: hidden;
             transition: transform 0.2s;
         }
         .lastfm-pill:hover {
             transform: scale(1.02);
         }
-        .lastfm-pill .artist-name {
-            padding: 10px 20px;
-            flex-grow: 1;
-            text-align: left;
-            color: white;
-        }
-        .lastfm-pill .play-count {
-            background: #D51007;
-            padding: 10px 20px;
-            color: white;
+        .lastfm-artist {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.75rem 1.25rem;
             font-weight: bold;
-            min-width: 100px;
-            text-align: center;
+            flex: 1;
+            text-align: left;
+            display: flex;
+            align-items: center;
+        }
+        .lastfm-plays {
+            background: #D51007;
+            padding: 0.75rem 1.25rem;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            white-space: nowrap;
         }
     </style>
 </head>
@@ -146,16 +148,16 @@
                     <div class="col-md-6">
                         {% for artist, play_count in lastfm_data.top_artists[:5] %}
                         <div class="lastfm-pill">
-                            <div class="artist-name">{{ artist }}</div>
-                            <div class="play-count">{{ play_count }} plays</div>
+                            <span class="lastfm-artist">{{ artist }}</span>
+                            <span class="lastfm-plays">{{ play_count }} plays</span>
                         </div>
                         {% endfor %}
                     </div>
                     <div class="col-md-6">
                         {% for artist, play_count in lastfm_data.top_artists[5:10] %}
                         <div class="lastfm-pill">
-                            <div class="artist-name">{{ artist }}</div>
-                            <div class="play-count">{{ play_count }} plays</div>
+                            <span class="lastfm-artist">{{ artist }}</span>
+                            <span class="lastfm-plays">{{ play_count }} plays</span>
                         </div>
                         {% endfor %}
                     </div>
@@ -196,32 +198,34 @@
 
         <div class="mb-4">
             <h2 class="h3 mb-4">Records by Month</h2>
-            {% for month in stats.months %}
-            {% if month in stats.records_by_month %}
-            <div class="month-section mb-5" id="{{ stats.month_ids[month] }}">
-                <h3 class="h4 mb-4">{{ month }}</h3>
-                <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
-                    {% for record in stats.records_by_month[month] %}
-                    <div class="col">
-                        <div class="card h-100 record-card">
-                            <a href="{{ record.album_uri }}" class="text-decoration-none text-white" target="_blank">
-                                <img src="{{ record.cover_image }}" class="card-img-top" alt="{{ record.title }}">
-                                <div class="card-body">
-                                    <h4 class="h6 mb-2">{{ record.title }}</h4>
-                                    <p class="mb-1">{{ record.artist|join(', ') }}</p>
-                                    <p class="text-muted mb-0">{{ record.formats[0].name }}</p>
-                                    {% if lastfm_data %}
-                                        {% for lastfm_album, lastfm_count in lastfm_data.top_albums %}
-                                            {% if lastfm_album == record.artist[0] + " - " + record.title %}
-                                            <p class="scrobble-count mb-0 lastfm-text">{{ lastfm_count }} scrobbles</p>
-                                            {% endif %}
-                                        {% endfor %}
-                                    {% endif %}
-                                </div>
-                            </a>
+            {% for month, records in stats.records_by_month.items() %}
+            {% if records %}
+            <div id="{{ month.lower() }}-records" class="row mb-5">
+                <div class="col-12">
+                    <h2>{{ month }}</h2>
+                    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
+                        {% for record in records %}
+                        <div class="col">
+                            <div class="card h-100 record-card">
+                                <a href="{{ record.album_uri }}" class="text-decoration-none text-white" target="_blank">
+                                    <img src="{{ record.cover_image }}" class="card-img-top" alt="{{ record.title }}">
+                                    <div class="card-body">
+                                        <h4 class="h6 mb-2">{{ record.title }}</h4>
+                                        <p class="mb-1">{{ record.artist|join(', ') }}</p>
+                                        <p class="text-muted mb-0">{{ record.formats[0].name }}</p>
+                                        {% if lastfm_data %}
+                                            {% for lastfm_album, lastfm_count in lastfm_data.top_albums %}
+                                                {% if lastfm_album == record.artist[0] + " - " + record.title %}
+                                                <p class="scrobble-count mb-0 lastfm-text">{{ lastfm_count }} scrobbles</p>
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% endif %}
+                                    </div>
+                                </a>
+                            </div>
                         </div>
+                        {% endfor %}
                     </div>
-                    {% endfor %}
                 </div>
             </div>
             {% endif %}
@@ -265,6 +269,17 @@
                     }]
                 },
                 options: {
+                    onClick: (e, elements) => {
+                        if (elements.length > 0) {
+                            const index = elements[0].index;
+                            const month = months[index].toLowerCase();
+                            const anchor = `${month}-records`;
+                            const element = document.getElementById(anchor);
+                            if (element) {
+                                element.scrollIntoView({ behavior: 'smooth' });
+                            }
+                        }
+                    },
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
