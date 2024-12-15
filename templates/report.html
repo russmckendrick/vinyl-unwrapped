@@ -23,6 +23,12 @@
                 <h2>{{ stats.total_records }}</h2>
                 <p>Records Added</p>
             </div>
+            {% if lastfm_data %}
+            <div class="total-scrobbles">
+                <h2>{{ lastfm_data.total_scrobbles }}</h2>
+                <p>Total Scrobbles</p>
+            </div>
+            {% endif %}
             <div class="chart-container">
                 <canvas id="monthlyChart"></canvas>
                 <script>
@@ -36,7 +42,33 @@
             </div>
         </div>
 
+        {% if lastfm_data %}
         <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Top Artists (Last.fm)</h3>
+                <ul class="stat-list">
+                    {% for artist, count in lastfm_data.top_artists %}
+                    <li>
+                        <span class="stat-label">{{ artist }}</span>
+                        <span class="stat-value">{{ count }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <div class="stat-card">
+                <h3>Top Albums (Last.fm)</h3>
+                <ul class="stat-list">
+                    {% for album, count in lastfm_data.top_albums %}
+                    <li>
+                        <span class="stat-label">{{ album }}</span>
+                        <span class="stat-value">{{ count }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+
             <div class="stat-card">
                 <h3>Top Genres</h3>
                 <ul class="stat-list">
@@ -100,6 +132,13 @@
                         <div class="artist-info">
                             <h4>{{ artist.name }}</h4>
                             <p class="record-count">{{ artist.count }} records</p>
+                            {% if lastfm_data %}
+                                {% for lastfm_artist, lastfm_count in lastfm_data.top_artists %}
+                                    {% if lastfm_artist == artist.name %}
+                                    <p class="scrobble-count">{{ lastfm_count }} scrobbles</p>
+                                    {% endif %}
+                                {% endfor %}
+                            {% endif %}
                         </div>
                     </a>
                 </div>
@@ -125,6 +164,13 @@
                                         <h4>{{ record.title }}</h4>
                                         <p class="artist-name">{{ record.artist|join(', ') }}</p>
                                         <p class="format">{{ record.formats[0].name }}</p>
+                                        {% if lastfm_data %}
+                                            {% for lastfm_album, lastfm_count in lastfm_data.top_albums %}
+                                                {% if lastfm_album == record.artist[0] + " - " + record.title %}
+                                                <p class="scrobble-count">{{ lastfm_count }} scrobbles</p>
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% endif %}
                                     </div>
                                 </a>
                             </div>
@@ -138,6 +184,9 @@
 
         <footer>
             <p>Generated on {{ generated_date }}</p>
+            {% if lastfm_data %}
+            <p>Last.fm data fetched on {{ lastfm_data.fetched_at }}</p>
+            {% endif %}
         </footer>
     </div>
     <script src="/js/charts.js"></script>

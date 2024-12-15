@@ -2,3 +2,4 @@ python-dotenv
 discogs-client
 jinja2
 requests
+pylast==5.2.0

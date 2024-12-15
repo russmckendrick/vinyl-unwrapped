@@ -12,8 +12,6 @@ load_dotenv()
 
 # Configuration
 USERNAME = os.getenv('DISCOGS_USERNAME', 'russmck')
-YEAR = datetime.now().year
-OUTPUT_FILE = f"collection_{YEAR}.json"
 MAX_RETRIES = 3
 RETRY_DELAY = int(os.getenv('DISCOGS_RATE_LIMIT_DELAY', '2'))  # seconds between retries
 
@@ -65,9 +63,8 @@ def fetch_russ_fm_data():
         logger.error(f"Error fetching russ.fm data: {str(e)}")
         return []
 
-def create_image_lookup():
+def create_image_lookup(russ_fm_data):
     """Create lookup tables for cover and artist images"""
-    russ_fm_data = fetch_russ_fm_data()
     cover_images = {}
     artist_images = {}
     album_uris = {}
@@ -83,16 +80,16 @@ def create_image_lookup():
     
     return cover_images, artist_images, album_uris, artist_uris
 
-def fetch_collection():
-    """Fetch collection items added in 2024"""
+def fetch_collection(year):
+    """Fetch collection items added in specified year"""
     d = get_discogs_client()
     user = d.user(USERNAME)
     collection = user.collection_folders[0].releases
     
     # Get image lookups from russ.fm
-    cover_images, artist_images, album_uris, artist_uris = create_image_lookup()
+    cover_images, artist_images, album_uris, artist_uris = create_image_lookup(fetch_russ_fm_data())
     
-    items_2024 = []
+    items = []
     page = 1
     
     while True:
@@ -108,8 +105,8 @@ def fetch_collection():
                     # Get the date added - it's already a datetime object
                     date_added = item.date_added
                     
-                    # Check if it was added in 2024
-                    if date_added.year == YEAR:
+                    # Check if it was added in the specified year
+                    if date_added.year == year:
                         logger.debug(f"Processing release: {item.release.title}")
                         logger.debug(f"Format data: {item.release.formats}")
                         
@@ -128,7 +125,7 @@ def fetch_collection():
                             'album_uri': album_uris.get(str(item.release.id)),
                             'artist_uri': artist_uris.get(str(item.release.id))
                         }
-                        items_2024.append(release_data)
+                        items.append(release_data)
                 except Exception as e:
                     logger.error(f"Error processing item: {str(e)}")
                     continue
@@ -149,36 +146,28 @@ def fetch_collection():
             else:
                 raise
     
-    logger.info(f"Found {len(items_2024)} items from {YEAR}")
-    return items_2024
+    logger.info(f"Found {len(items)} items from {year}")
+    return items
 
-def save_collection(items):
+def save_collection(items, output_file):
     """Save collection to JSON file"""
-    with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
+    with open(output_file, 'w', encoding='utf-8') as f:
         json.dump(items, f, indent=2, ensure_ascii=False)
+    logger.info(f"Saved {len(items)} items to {output_file}")
 
-def main():
-    try:
-        # Check if collection file already exists
-        if os.path.exists(OUTPUT_FILE):
-            while True:
-                response = input(f"\nCollection file '{OUTPUT_FILE}' already exists.\nWould you like to:\n[1] Use existing file\n[2] Re-generate collection\nChoice (1/2): ").strip()
-                if response in ['1', '2']:
-                    break
-                print("Invalid choice. Please enter 1 or 2.")
-            
-            if response == '1':
-                logger.info(f"Using existing collection file: {OUTPUT_FILE}")
-                return
-        
-        print(f"Fetching {YEAR} collection for user: {USERNAME}")
-        items = fetch_collection()
-        save_collection(items)
-        print(f"Successfully saved {len(items)} items to {OUTPUT_FILE}")
-        
-    except Exception as e:
-        logger.error(f"Error: {str(e)}")
-        raise
+def main(year=None, output_file=None):
+    """Main function to fetch and save collection data"""
+    if year is None:
+        year = datetime.now().year
+    if output_file is None:
+        output_file = f"collection_{year}.json"
+    
+    print(f"Fetching {year} collection for user: {USERNAME}")
+    items = fetch_collection(year)
+    save_collection(items, output_file)
+    print(f"Successfully saved {len(items)} items to {output_file}")
+    
+    return items
 
 if __name__ == "__main__":
     main()

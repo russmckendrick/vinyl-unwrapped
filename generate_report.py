@@ -4,6 +4,11 @@ import json
 import os
 from pathlib import Path
 from jinja2 import Environment, FileSystemLoader
+import logging
+
+# Set up logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 def create_month_id(month):
     """Create a valid HTML ID from a month name"""
@@ -104,51 +109,58 @@ def analyze_collection(data, year=None):
         'year': year
     }
 
-def generate_html(stats, template_dir='templates'):
+def generate_html(stats, lastfm_data=None, template_dir='templates'):
     env = Environment(loader=FileSystemLoader(template_dir))
     template = env.get_template('report.html')
     
-    return template.render(
-        stats=stats,
-        year=stats['year'],
-        generated_date=datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    )
+    # Create month IDs for navigation
+    month_ids = {month: create_month_id(month) for month in stats['months']}
+    stats['month_ids'] = month_ids
+    
+    # Include Last.fm data if available
+    context = {
+        'stats': stats,
+        'lastfm_data': lastfm_data,
+        'year': stats['year'],
+        'generated_date': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    }
+    
+    logger.debug(f"Template context - Last.fm data present: {lastfm_data is not None}")
+    if lastfm_data:
+        logger.debug(f"Last.fm scrobbles in context: {lastfm_data['total_scrobbles']}")
+    
+    return template.render(**context)
 
-def main(year=None, output_path=None):
-    # Use current year if none provided
-    if year is None:
-        year = datetime.now().year
-    
-    # Create necessary directories if they don't exist
-    if not os.path.exists('templates'):
-        os.makedirs('templates')
-    if not os.path.exists('static'):
-        os.makedirs('static')
-        os.makedirs('static/css')
-        os.makedirs('static/js')
-    
-    # Load collection data
-    collection_data = load_collection(f'collection_{year}.json')
-    
-    # Analyze collection
-    stats = analyze_collection(collection_data, year)
-    
-    # Generate HTML report
-    html_content = generate_html(stats)
-    
-    # Write the HTML file
-    if output_path:
-        output_file = output_path
-    else:
-        output_file = f'vinyl_unwrapped_{year}.html'
+def main(year=None, output_path=None, lastfm_data=None):
+    # Use current directory if no output path provided
+    if output_path is None:
+        output_path = os.getcwd()
         
-    # Create directory if it doesn't exist
-    os.makedirs(os.path.dirname(output_file), exist_ok=True)
+    # Ensure output directory exists
+    os.makedirs(output_path, exist_ok=True)
     
+    # Load and analyze collection from main directory
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    collection_file = os.path.join(base_dir, f'collection_{year}.json')
+    
+    logger.info(f"Loading collection from {collection_file}")
+    collection = load_collection(collection_file)
+    stats = analyze_collection(collection, year)
+    
+    # Log Last.fm data status
+    logger.info(f"Generating report with Last.fm data: {lastfm_data is not None}")
+    if lastfm_data:
+        logger.info(f"Last.fm data includes {lastfm_data['total_scrobbles']} scrobbles")
+    
+    # Generate HTML
+    html_content = generate_html(stats, lastfm_data, template_dir=os.path.join(os.path.dirname(__file__), 'templates'))
+    
+    # Write HTML file
+    output_file = os.path.join(output_path, 'index.html')
     with open(output_file, 'w') as f:
         f.write(html_content)
     
-    print(f"Report generated successfully for {year}!")
+    logger.info(f"Report generated: {output_file}")
 
 if __name__ == "__main__":
     main()

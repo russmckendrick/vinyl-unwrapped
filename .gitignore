@@ -2,6 +2,7 @@
 collection_*
 vinyl_unwrapped*
 __pycache__
+lastfm_*
 
 # Ignore everything in unwrapped folder
 unwrapped/*

@@ -4,13 +4,26 @@ import argparse
 from datetime import datetime
 import os
 import fetch_collection
+import fetch_lastfm
 import generate_report
 import shutil
+import logging
+
+# Set up logging
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Generate Vinyl Unwrapped report for a specific year')
     parser.add_argument('--year', type=int, default=datetime.now().year,
                       help='Year to generate the report for (defaults to current year)')
+    parser.add_argument('--lastfm', action='store_true',
+                      help='Include Last.fm listening data in the report')
+    parser.add_argument('--force', action='store_true',
+                      help='Force regeneration of collection and Last.fm data')
     return parser.parse_args()
 
 def setup_unwrapped_structure():
@@ -31,7 +44,7 @@ def setup_unwrapped_structure():
                 os.path.join(static_dir, 'css', 'style.css'),
                 os.path.join(unwrapped_dir, 'css', 'style.css')
             )
-            print("Updated style.css in unwrapped directory")
+            logger.info("Updated style.css in unwrapped directory")
             
         # Copy JS files
         if os.path.exists(os.path.join(static_dir, 'js', 'charts.js')):
@@ -39,7 +52,7 @@ def setup_unwrapped_structure():
                 os.path.join(static_dir, 'js', 'charts.js'),
                 os.path.join(unwrapped_dir, 'js', 'charts.js')
             )
-            print("Updated charts.js in unwrapped directory")
+            logger.info("Updated charts.js in unwrapped directory")
 
 def generate_index_html():
     base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -162,7 +175,7 @@ def main():
     args = parse_args()
     year = args.year
     
-    # Setup unwrapped directory structure
+    # Create base directory structure
     setup_unwrapped_structure()
     
     # Create year directory
@@ -170,25 +183,36 @@ def main():
     year_dir = os.path.join(base_dir, 'unwrapped', str(year))
     os.makedirs(year_dir, exist_ok=True)
     
-    # Update the year and output file in fetch_collection
-    fetch_collection.YEAR = year
-    fetch_collection.OUTPUT_FILE = f"collection_{year}.json"
+    # Set collection file path
+    collection_file = os.path.join(base_dir, f'collection_{year}.json')
     
-    # Run fetch collection
-    print(f"Fetching collection data for {year}...")
-    fetch_collection.main()
+    # Check if collection file exists
+    if os.path.exists(collection_file) and not args.force:
+        logger.info(f"Using existing collection file: {collection_file}")
+    else:
+        # Fetch collection data
+        logger.info(f"Fetching collection data for {year}...")
+        fetch_collection.main(year, collection_file)
     
-    # Set the output path for generate_report
-    output_path = os.path.join(year_dir, 'index.html')
+    # Get Last.fm data if requested
+    lastfm_data = None
+    if args.lastfm:
+        lastfm_file = os.path.join(base_dir, f'lastfm_{year}.json')
+        lastfm_data = fetch_lastfm.main(year, lastfm_file, args.force)
+        if lastfm_data:
+            logger.info(f"Last.fm data loaded with {lastfm_data['total_scrobbles']} scrobbles")
+        else:
+            logger.warning("Failed to load Last.fm data")
     
-    # Run generate report with updated paths
-    print(f"Generating report for {year}...")
-    generate_report.main(year, output_path)
+    # Generate report
+    logger.info(f"Generating report for {year}...")
+    logger.debug(f"Passing Last.fm data to report generator: {lastfm_data is not None}")
+    generate_report.main(year, year_dir, lastfm_data)
     
     # Generate/update index.html
     generate_index_html()
     
-    print(f"Report generation complete for {year}!")
+    logger.info(f"Report generation complete for {year}!")
 
 if __name__ == "__main__":
     main()
