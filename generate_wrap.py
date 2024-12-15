@@ -5,6 +5,7 @@ from datetime import datetime
 import os
 import fetch_collection
 import generate_report
+import shutil
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Generate Vinyl Unwrapped report for a specific year')
@@ -12,9 +13,162 @@ def parse_args():
                       help='Year to generate the report for (defaults to current year)')
     return parser.parse_args()
 
+def setup_unwrapped_structure():
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    unwrapped_dir = os.path.join(base_dir, 'unwrapped')
+    
+    # Create base directories
+    os.makedirs(unwrapped_dir, exist_ok=True)
+    os.makedirs(os.path.join(unwrapped_dir, 'css'), exist_ok=True)
+    os.makedirs(os.path.join(unwrapped_dir, 'js'), exist_ok=True)
+    
+    # Always copy static files to ensure we have the latest version
+    static_dir = os.path.join(base_dir, 'static')
+    if os.path.exists(static_dir):
+        # Copy CSS files
+        if os.path.exists(os.path.join(static_dir, 'css', 'style.css')):
+            shutil.copy2(
+                os.path.join(static_dir, 'css', 'style.css'),
+                os.path.join(unwrapped_dir, 'css', 'style.css')
+            )
+            print("Updated style.css in unwrapped directory")
+            
+        # Copy JS files
+        if os.path.exists(os.path.join(static_dir, 'js', 'charts.js')):
+            shutil.copy2(
+                os.path.join(static_dir, 'js', 'charts.js'),
+                os.path.join(unwrapped_dir, 'js', 'charts.js')
+            )
+            print("Updated charts.js in unwrapped directory")
+
+def generate_index_html():
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    unwrapped_dir = os.path.join(base_dir, 'unwrapped')
+    
+    # Get list of year directories
+    years = []
+    for item in os.listdir(unwrapped_dir):
+        if item.isdigit() and os.path.isdir(os.path.join(unwrapped_dir, item)):
+            years.append(item)
+    years.sort(reverse=True)
+    
+    # Generate year cards HTML
+    year_cards_html = ""
+    for year in years:
+        year_cards_html += f"""
+            <div class="year-card">
+                <a href="/{year}/" class="year-link">{year} Unwrapped</a>
+            </div>"""
+    
+    # Create index.html
+    index_path = os.path.join(unwrapped_dir, 'index.html')
+    with open(index_path, 'w') as f:
+        f.write("""<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vinyl Unwrapped - Year by Year Stats</title>
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background: #0f172a;
+            color: #e2e8f0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        .header {
+            text-align: center;
+            padding: 4rem 0;
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            border-bottom: 1px solid #334155;
+        }
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #38bdf8 0%, #818cf8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .year-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+        .year-card {
+            background: #1e293b;
+            border-radius: 1rem;
+            padding: 2rem;
+            text-align: center;
+            transition: transform 0.2s ease-in-out;
+            border: 1px solid #334155;
+        }
+        .year-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        .year-link {
+            color: #e2e8f0;
+            text-decoration: none;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        .year-link:hover {
+            color: #38bdf8;
+        }
+        .description {
+            max-width: 800px;
+            margin: 2rem auto;
+            text-align: center;
+            color: #94a3b8;
+        }
+        footer {
+            text-align: center;
+            padding: 2rem;
+            margin-top: 4rem;
+            border-top: 1px solid #334155;
+            color: #94a3b8;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="container">
+            <h1>Vinyl Unwrapped</h1>
+            <div class="description">
+                A year-by-year journey through my vinyl collection, powered by Discogs data and visualized with modern web technologies.
+            </div>
+        </div>
+    </div>
+    <main class="container">
+        <div class="year-grid">
+            """ + year_cards_html + """
+        </div>
+    </main>
+    <footer>
+        <p>Built with ❤️ using Discogs data</p>
+    </footer>
+</body>
+</html>""")
+
 def main():
     args = parse_args()
     year = args.year
+    
+    # Setup unwrapped directory structure
+    setup_unwrapped_structure()
+    
+    # Create year directory
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    year_dir = os.path.join(base_dir, 'unwrapped', str(year))
+    os.makedirs(year_dir, exist_ok=True)
     
     # Update the year and output file in fetch_collection
     fetch_collection.YEAR = year
@@ -24,9 +178,15 @@ def main():
     print(f"Fetching collection data for {year}...")
     fetch_collection.main()
     
-    # Run generate report
+    # Set the output path for generate_report
+    output_path = os.path.join(year_dir, 'index.html')
+    
+    # Run generate report with updated paths
     print(f"Generating report for {year}...")
-    generate_report.main(year)
+    generate_report.main(year, output_path)
+    
+    # Generate/update index.html
+    generate_index_html()
     
     print(f"Report generation complete for {year}!")
 

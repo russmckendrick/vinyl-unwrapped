@@ -114,7 +114,7 @@ def generate_html(stats, template_dir='templates'):
         generated_date=datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     )
 
-def main(year=None):
+def main(year=None, output_path=None):
     # Use current year if none provided
     if year is None:
         year = datetime.now().year
@@ -137,7 +137,14 @@ def main(year=None):
     html_content = generate_html(stats)
     
     # Write the HTML file
-    output_file = f'vinyl_unwrapped_{year}.html'
+    if output_path:
+        output_file = output_path
+    else:
+        output_file = f'vinyl_unwrapped_{year}.html'
+        
+    # Create directory if it doesn't exist
+    os.makedirs(os.path.dirname(output_file), exist_ok=True)
+    
     with open(output_file, 'w') as f:
         f.write(html_content)
     
