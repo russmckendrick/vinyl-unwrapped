@@ -1,3 +1,4 @@
 .env
-collection_2024.json
+collection_*
 vinyl_unwrapped*
+__pycache__
