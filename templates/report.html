@@ -15,21 +15,24 @@
 <body>
     <div class="container">
         <header>
-            <h1>Vinyl Unwrapped {{ year }}</h1>
+            <h1>Unwrapped {{ year }}</h1>
         </header>
 
         <div class="stats-overview">
-            <div class="total-records">
-                <h2>{{ stats.total_records }}</h2>
-                <p>Records Added</p>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Records Added</h3>
+                    <div class="stat-value">{{ stats.total_records }}</div>
+                </div>
+                {% if lastfm_data %}
+                <div class="stat-card">
+                    <h3>Total Scrobbles</h3>
+                    <div class="stat-value">{{ lastfm_data.total_scrobbles }}</div>
+                </div>
+                {% endif %}
             </div>
-            {% if lastfm_data %}
-            <div class="total-scrobbles">
-                <h2>{{ lastfm_data.total_scrobbles }}</h2>
-                <p>Total Scrobbles</p>
-            </div>
-            {% endif %}
-            <div class="chart-container">
+            <div class="monthly-chart">
+                <h3>Albums Added per Month</h3>
                 <canvas id="monthlyChart"></canvas>
                 <script>
                     // Store chart data in a global object to avoid conflicts
@@ -42,22 +45,6 @@
             </div>
         </div>
 
-        {% if lastfm_data %}
-        <div class="stats-grid">
-            <div class="stat-card">
-                <h3>Most Played Artists</h3>
-                <ul class="stat-list">
-                    {% for artist, count in lastfm_data.top_artists %}
-                    <li>
-                        <span class="stat-label">{{ artist }}</span>
-                        <span class="stat-value">{{ count }} plays</span>
-                    </li>
-                    {% endfor %}
-                </ul>
-            </div>
-        </div>
-        {% endif %}
-
         <div class="stats-grid">
             <div class="stat-card">
                 <h3>Top Labels</h3>
@@ -65,18 +52,6 @@
                     {% for label, count in stats.top_labels.items() %}
                     <li>
                         <span class="stat-label">{{ label }}</span>
-                        <span class="stat-value">{{ count }}</span>
-                    </li>
-                    {% endfor %}
-                </ul>
-            </div>
-
-            <div class="stat-card">
-                <h3>Top Formats</h3>
-                <ul class="stat-list">
-                    {% for format, count in stats.top_formats.items() %}
-                    <li>
-                        <span class="stat-label">{{ format }}</span>
                         <span class="stat-value">{{ count }}</span>
                     </li>
                     {% endfor %}
@@ -108,10 +83,24 @@
             </div>
         </div>
 
+        {% if lastfm_data %}
+        <div class="lastfm-stats">
+            <h2>Most Played Artists on Last.fm</h2>
+            <div class="lastfm-grid">
+                {% for artist, plays in lastfm_data.top_artists %}
+                <div class="lastfm-card">
+                    <h4>{{ artist }}</h4>
+                    <p class="scrobble-count">{{ plays }} plays</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
         <div class="top-artists">
-            <h2>{{ year }}'s Most Collected Artists</h2>
+            <h2>Most Collected Artists</h2>
             <div class="records-grid">
-                {% for artist in stats.top_artists %}
+                {% for artist in stats.top_artists[:12] %}
                 <div class="artist-card">
                     <a href="{{ artist.records[0].artist_uri }}" target="_blank" class="artist-link">
                         {% if artist.records[0].artist_image %}
