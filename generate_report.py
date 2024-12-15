@@ -14,6 +14,9 @@ def load_collection(json_file):
         return json.load(f)
 
 def analyze_collection(data):
+    # Filter out records without russ.fm URLs
+    data = [record for record in data if record['album_uri'] is not None and record['artist_uri'] is not None]
+    
     total_records = len(data)
     
     # Sort all records by date
@@ -35,7 +38,8 @@ def analyze_collection(data):
         for style in item.get('styles', []):
             styles[style] += 1
         for artist in item['artist']:
-            artists[artist] += 1
+            if artist != "Various":  # Skip counting "Various" as an artist
+                artists[artist] += 1
     
     # Format analysis
     formats = Counter()
@@ -69,13 +73,16 @@ def analyze_collection(data):
     
     # Get top artists with their record counts
     top_artists_data = []
-    for artist, count in artists.most_common(10):
-        artist_records = [record for record in data if artist in record['artist']]
-        top_artists_data.append({
-            'name': artist,
-            'count': count,
-            'records': artist_records  # Pass the full record data
-        })
+    for artist, count in artists.most_common():  # Get all artists first
+        if artist != "Various":  # Skip Various Artists
+            artist_records = [record for record in data if artist in record['artist']]
+            top_artists_data.append({
+                'name': artist,
+                'count': count,
+                'records': artist_records
+            })
+            if len(top_artists_data) == 10:  # Only take top 10 non-Various artists
+                break
     
     return {
         'total_records': total_records,

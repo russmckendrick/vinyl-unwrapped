@@ -70,14 +70,18 @@ def create_image_lookup():
     russ_fm_data = fetch_russ_fm_data()
     cover_images = {}
     artist_images = {}
+    album_uris = {}
+    artist_uris = {}
     
     for item in russ_fm_data:
         discogs_id = item.get('discogsRelease')
         if discogs_id:
             cover_images[discogs_id] = item.get('coverImage')
             artist_images[discogs_id] = item.get('artistImage')
+            album_uris[discogs_id] = item.get('albumUri')
+            artist_uris[discogs_id] = item.get('artistUri')
     
-    return cover_images, artist_images
+    return cover_images, artist_images, album_uris, artist_uris
 
 def fetch_collection():
     """Fetch collection items added in 2024"""
@@ -86,7 +90,7 @@ def fetch_collection():
     collection = user.collection_folders[0].releases
     
     # Get image lookups from russ.fm
-    cover_images, artist_images = create_image_lookup()
+    cover_images, artist_images, album_uris, artist_uris = create_image_lookup()
     
     items_2024 = []
     page = 1
@@ -120,7 +124,9 @@ def fetch_collection():
                             'genres': item.release.genres,
                             'styles': item.release.styles if hasattr(item.release, 'styles') else [],
                             'cover_image': cover_images.get(str(item.release.id)),
-                            'artist_image': artist_images.get(str(item.release.id))
+                            'artist_image': artist_images.get(str(item.release.id)),
+                            'album_uri': album_uris.get(str(item.release.id)),
+                            'artist_uri': artist_uris.get(str(item.release.id))
                         }
                         items_2024.append(release_data)
                 except Exception as e:

@@ -92,15 +92,17 @@
             <div class="records-grid">
                 {% for artist in stats.top_artists %}
                 <div class="artist-card">
-                    {% if artist.records[0].artist_image %}
-                    <img src="{{ artist.records[0].artist_image }}" alt="{{ artist.name }}" width="300" height="300">
-                    {% else %}
-                    <img src="https://placehold.co/300x300/1db954/ffffff?text={{ artist.name|replace(' ', '+')|urlencode }}" alt="{{ artist.name }}" width="300" height="300">
-                    {% endif %}
-                    <div class="artist-info">
-                        <h4>{{ artist.name }}</h4>
-                        <p class="record-count">{{ artist.count }} records</p>
-                    </div>
+                    <a href="{{ artist.records[0].artist_uri }}" target="_blank" class="artist-link">
+                        {% if artist.records[0].artist_image %}
+                        <img src="{{ artist.records[0].artist_image }}" alt="{{ artist.name }}" width="300" height="300">
+                        {% else %}
+                        <img src="https://placehold.co/300x300/1db954/ffffff?text={{ artist.name|replace(' ', '+')|urlencode }}" alt="{{ artist.name }}" width="300" height="300">
+                        {% endif %}
+                        <div class="artist-info">
+                            <h4>{{ artist.name }}</h4>
+                            <p class="record-count">{{ artist.count }} records</p>
+                        </div>
+                    </a>
                 </div>
                 {% endfor %}
             </div>
@@ -112,23 +114,23 @@
                 {% if month in stats.records_by_month %}
                 <div id="{{ stats.month_ids[month] }}" class="month-section">
                     <h3>{{ month }} <span class="record-count">({{ stats.records_by_month[month]|length }} records)</span></h3>
-                    <div class="records-grid">
-                        {% for record in stats.records_by_month[month] %}
-                        <div class="record-card">
-                            <div class="record-image">
-                                <img src="{{ record.cover_image }}" alt="{{ record.title }}">
+                    <div class="month-records">
+                        <div class="records-grid">
+                            {% for record in stats.records_by_month[month] %}
+                            <div class="record-card">
+                                <a href="{{ record.album_uri }}" target="_blank" class="album-link">
+                                    <div class="record-image">
+                                        <img src="{{ record.cover_image }}" alt="{{ record.title }}">
+                                    </div>
+                                    <div class="record-info">
+                                        <h4>{{ record.title }}</h4>
+                                        <p class="artist-name">{{ record.artist|join(', ') }}</p>
+                                        <p class="format">{{ record.formats[0].name }}</p>
+                                    </div>
+                                </a>
                             </div>
-                            <div class="record-info">
-                                <h4>{{ record.title }}</h4>
-                                <p class="artist-name">{{ record.artist|join(', ') }}</p>
-                                <p class="record-meta">
-                                    {% for format in record.formats %}
-                                    {{ format.name }}{% if not loop.last %}, {% endif %}
-                                    {% endfor %}
-                                </p>
-                            </div>
+                            {% endfor %}
                         </div>
-                        {% endfor %}
                     </div>
                 </div>
                 {% endif %}
