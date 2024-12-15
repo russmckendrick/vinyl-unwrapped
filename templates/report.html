@@ -113,15 +113,24 @@
             <div class="records-grid">
                 {% for artist in stats.top_artists %}
                 <div class="artist-card">
-                    <h3>{{ artist.name }}</h3>
-                    <p>{{ artist.count }} records</p>
-                    <div class="records-list">
-                        {% for record in artist.records %}
-                        <div class="record-item">
-                            <a href="{{ record.album_uri }}" target="_blank">{{ record.title }}</a>
+                    <a href="{{ artist.records[0].artist_uri }}" target="_blank" class="artist-link">
+                        {% if artist.records[0].artist_image %}
+                        <img src="{{ artist.records[0].artist_image }}" alt="{{ artist.name }}" width="300" height="300">
+                        {% else %}
+                        <img src="https://placehold.co/300x300/1db954/ffffff?text={{ artist.name|replace(' ', '+')|urlencode }}" alt="{{ artist.name }}" width="300" height="300">
+                        {% endif %}
+                        <div class="artist-info">
+                            <h4>{{ artist.name }}</h4>
+                            <p class="record-count">{{ artist.count }} records</p>
+                            {% if lastfm_data %}
+                                {% for lastfm_artist, lastfm_count in lastfm_data.top_artists %}
+                                    {% if lastfm_artist == artist.name %}
+                                    <p class="scrobble-count">{{ lastfm_count }} scrobbles</p>
+                                    {% endif %}
+                                {% endfor %}
+                            {% endif %}
                         </div>
-                        {% endfor %}
-                    </div>
+                    </a>
                 </div>
                 {% endfor %}
             </div>
@@ -136,38 +145,23 @@
                 <div class="records-grid">
                     {% for record in stats.records_by_month[month] %}
                     <div class="record-card">
-                        {% if record.cover_image %}
-                        <div class="record-image">
-                            <img src="{{ record.cover_image }}" alt="{{ record.title }} cover" loading="lazy">
-                        </div>
-                        {% endif %}
-                        <div class="record-info">
-                            <h4><a href="{{ record.album_uri }}" target="_blank">{{ record.title }}</a></h4>
-                            <p class="artist">
-                                {% for artist_name in record.artist %}
-                                {% if not loop.first %} / {% endif %}
-                                <a href="{{ record.artist_uri }}" target="_blank">
-                                    {% if record.artist_image %}
-                                    <img src="{{ record.artist_image }}" alt="{{ artist_name }}" class="artist-thumbnail" loading="lazy">
-                                    {% endif %}
-                                    {{ artist_name }}
-                                </a>
-                                {% endfor %}
-                            </p>
-                            <p class="details">
-                                {% for format in record.formats %}
-                                {{ format.name }}
-                                {% if format.descriptions %}({{ format.descriptions|join(', ') }}){% endif %}
-                                {% if not loop.last %}, {% endif %}
-                                {% endfor %}
-                            </p>
-                            <p class="labels">
-                                {% for label in record.labels %}
-                                {% if not loop.first %} / {% endif %}
-                                {{ label }}
-                                {% endfor %}
-                            </p>
-                        </div>
+                        <a href="{{ record.album_uri }}" target="_blank" class="album-link">
+                            <div class="record-image">
+                                <img src="{{ record.cover_image }}" alt="{{ record.title }}">
+                            </div>
+                            <div class="record-info">
+                                <h4>{{ record.title }}</h4>
+                                <p class="artist-name">{{ record.artist|join(', ') }}</p>
+                                <p class="format">{{ record.formats[0].name }}</p>
+                                {% if lastfm_data %}
+                                    {% for lastfm_album, lastfm_count in lastfm_data.top_albums %}
+                                        {% if lastfm_album == record.artist[0] + " - " + record.title %}
+                                        <p class="scrobble-count">{{ lastfm_count }} scrobbles</p>
+                                        {% endif %}
+                                    {% endfor %}
+                                {% endif %}
+                            </div>
+                        </a>
                     </div>
                     {% endfor %}
                 </div>
