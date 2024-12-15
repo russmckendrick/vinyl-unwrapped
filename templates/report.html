@@ -1,156 +1,186 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-bs-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vinyl Unwrapped {{ year }}</title>
-    <link rel="stylesheet" href="/css/style.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-        // Pass the data to JavaScript
-        const monthlyData = {{ stats.monthly_data|tojson|safe }};
-        const months = {{ stats.months|tojson|safe }};
-    </script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css">
+    <style>
+        body {
+            background-color: #121212;
+            color: #ffffff;
+        }
+        .card {
+            background-color: #282828;
+            border: none;
+        }
+        .stat-value {
+            color: #1db954;
+            font-size: 2rem;
+            font-weight: bold;
+        }
+        .artist-card img, .record-card img {
+            width: 100%;
+            height: auto;
+            border-radius: .375rem;
+            transition: transform 0.2s;
+        }
+        .artist-card:hover img, .record-card:hover img {
+            transform: scale(1.05);
+        }
+        .scrobble-count {
+            color: #1db954;
+        }
+        .chart-container {
+            height: 300px;
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <header>
+    <div class="container py-4">
+        <header class="text-center mb-5">
             <h1>Unwrapped {{ year }}</h1>
         </header>
 
-        <div class="stats-overview">
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <h3>Records Added</h3>
-                    <div class="stat-value">{{ stats.total_records }}</div>
+        <div class="row g-4 mb-4">
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <h3 class="h5 mb-3">Records Added</h3>
+                        <div class="stat-value">{{ stats.total_records }}</div>
+                    </div>
                 </div>
-                {% if lastfm_data %}
-                <div class="stat-card">
-                    <h3>Total Scrobbles</h3>
-                    <div class="stat-value">{{ lastfm_data.total_scrobbles }}</div>
-                </div>
-                {% endif %}
             </div>
-            <div class="monthly-chart">
-                <h3>Albums Added per Month</h3>
-                <canvas id="monthlyChart"></canvas>
-                <script>
-                    // Store chart data in a global object to avoid conflicts
-                    window.chartData = {
-                        months: {{ stats.months|tojson }},
-                        monthlyData: {{ stats.monthly_data|tojson }},
-                        monthIds: {{ stats.month_ids|tojson|safe }}
-                    };
-                </script>
+            {% if lastfm_data %}
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <h3 class="h5 mb-3">Total Scrobbles</h3>
+                        <div class="stat-value">{{ lastfm_data.total_scrobbles }}</div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            <div class="col-md-{% if lastfm_data %}4{% else %}8{% endif %}">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h3 class="h5 mb-3">Albums Added per Month</h3>
+                        <div class="chart-container">
+                            <canvas id="monthlyChart"></canvas>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <div class="stats-grid">
-            <div class="stat-card">
-                <h3>Top Labels</h3>
-                <ul class="stat-list">
-                    {% for label, count in stats.top_labels.items() %}
-                    <li>
-                        <span class="stat-label">{{ label }}</span>
-                        <span class="stat-value">{{ count }}</span>
-                    </li>
-                    {% endfor %}
-                </ul>
+        <div class="row g-4 mb-4">
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h3 class="h5 mb-3">Top Labels</h3>
+                        <ul class="list-unstyled">
+                            {% for label, count in stats.top_labels.items() %}
+                            <li class="d-flex justify-content-between align-items-center mb-2">
+                                <span>{{ label }}</span>
+                                <span class="badge bg-success rounded-pill">{{ count }}</span>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
             </div>
-
-            <div class="stat-card">
-                <h3>Top Genres</h3>
-                <ul class="stat-list">
-                    {% for genre, count in stats.top_genres.items() %}
-                    <li>
-                        <span class="stat-label">{{ genre }}</span>
-                        <span class="stat-value">{{ count }}</span>
-                    </li>
-                    {% endfor %}
-                </ul>
-            </div>
-
-            <div class="stat-card">
-                <h3>Top Styles</h3>
-                <ul class="stat-list">
-                    {% for style, count in stats.top_styles.items() %}
-                    <li>
-                        <span class="stat-label">{{ style }}</span>
-                        <span class="stat-value">{{ count }}</span>
-                    </li>
-                    {% endfor %}
-                </ul>
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h3 class="h5 mb-3">Top Genres</h3>
+                        <ul class="list-unstyled">
+                            {% for genre, count in stats.top_genres.items() %}
+                            <li class="d-flex justify-content-between align-items-center mb-2">
+                                <span>{{ genre }}</span>
+                                <span class="badge bg-success rounded-pill">{{ count }}</span>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
             </div>
         </div>
 
         {% if lastfm_data %}
-        <div class="lastfm-stats">
-            <h2>Most Played Artists on Last.fm</h2>
-            <div class="lastfm-grid">
+        <div class="mb-4">
+            <h2 class="h3 mb-4">Most Played Artists on Last.fm</h2>
+            <div class="row row-cols-2 row-cols-md-3 row-cols-lg-5 g-4">
                 {% for artist, plays in lastfm_data.top_artists %}
-                <div class="lastfm-card">
-                    <h4>{{ artist }}</h4>
-                    <p class="scrobble-count">{{ plays }} plays</p>
+                <div class="col">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <h4 class="h6 mb-2">{{ artist }}</h4>
+                            <p class="scrobble-count mb-0">{{ plays }} plays</p>
+                        </div>
+                    </div>
                 </div>
                 {% endfor %}
             </div>
         </div>
         {% endif %}
 
-        <div class="top-artists">
-            <h2>Most Collected Artists</h2>
-            <div class="records-grid">
+        <div class="mb-4">
+            <h2 class="h3 mb-4">Most Collected Artists</h2>
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
                 {% for artist in stats.top_artists[:12] %}
-                <div class="artist-card">
-                    <a href="{{ artist.records[0].artist_uri }}" target="_blank" class="artist-link">
-                        {% if artist.records[0].artist_image %}
-                        <img src="{{ artist.records[0].artist_image }}" alt="{{ artist.name }}" width="300" height="300">
-                        {% else %}
-                        <img src="https://placehold.co/300x300/1db954/ffffff?text={{ artist.name|replace(' ', '+')|urlencode }}" alt="{{ artist.name }}" width="300" height="300">
-                        {% endif %}
-                        <div class="artist-info">
-                            <h4>{{ artist.name }}</h4>
-                            <p class="record-count">{{ artist.count }} records</p>
-                            {% if lastfm_data %}
-                                {% for lastfm_artist, lastfm_count in lastfm_data.top_artists %}
-                                    {% if lastfm_artist == artist.name %}
-                                    <p class="scrobble-count">{{ lastfm_count }} scrobbles</p>
-                                    {% endif %}
-                                {% endfor %}
+                <div class="col">
+                    <div class="card h-100 artist-card">
+                        <a href="{{ artist.records[0].artist_uri }}" class="text-decoration-none text-white" target="_blank">
+                            {% if artist.records[0].artist_image %}
+                            <img src="{{ artist.records[0].artist_image }}" class="card-img-top" alt="{{ artist.name }}">
+                            {% else %}
+                            <img src="https://placehold.co/300x300/1db954/ffffff?text={{ artist.name|replace(' ', '+')|urlencode }}" class="card-img-top" alt="{{ artist.name }}">
                             {% endif %}
-                        </div>
-                    </a>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
-
-        <div class="monthly-records">
-            <h2>Records by Month</h2>
-            {% for month in stats.months %}
-            {% if month in stats.records_by_month %}
-            <div class="month-section" id="{{ stats.month_ids[month] }}">
-                <h3>{{ month }}</h3>
-                <div class="records-grid">
-                    {% for record in stats.records_by_month[month] %}
-                    <div class="record-card">
-                        <a href="{{ record.album_uri }}" target="_blank" class="album-link">
-                            <div class="record-image">
-                                <img src="{{ record.cover_image }}" alt="{{ record.title }}">
-                            </div>
-                            <div class="record-info">
-                                <h4>{{ record.title }}</h4>
-                                <p class="artist-name">{{ record.artist|join(', ') }}</p>
-                                <p class="format">{{ record.formats[0].name }}</p>
+                            <div class="card-body">
+                                <h4 class="h6 mb-2">{{ artist.name }}</h4>
+                                <p class="mb-1">{{ artist.count }} records</p>
                                 {% if lastfm_data %}
-                                    {% for lastfm_album, lastfm_count in lastfm_data.top_albums %}
-                                        {% if lastfm_album == record.artist[0] + " - " + record.title %}
-                                        <p class="scrobble-count">{{ lastfm_count }} scrobbles</p>
+                                    {% for lastfm_artist, lastfm_count in lastfm_data.top_artists %}
+                                        {% if lastfm_artist == artist.name %}
+                                        <p class="scrobble-count mb-0">{{ lastfm_count }} scrobbles</p>
                                         {% endif %}
                                     {% endfor %}
                                 {% endif %}
                             </div>
                         </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="mb-4">
+            <h2 class="h3 mb-4">Records by Month</h2>
+            {% for month in stats.months %}
+            {% if month in stats.records_by_month %}
+            <div class="month-section mb-5" id="{{ stats.month_ids[month] }}">
+                <h3 class="h4 mb-4">{{ month }}</h3>
+                <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
+                    {% for record in stats.records_by_month[month] %}
+                    <div class="col">
+                        <div class="card h-100 record-card">
+                            <a href="{{ record.album_uri }}" class="text-decoration-none text-white" target="_blank">
+                                <img src="{{ record.cover_image }}" class="card-img-top" alt="{{ record.title }}">
+                                <div class="card-body">
+                                    <h4 class="h6 mb-2">{{ record.title }}</h4>
+                                    <p class="mb-1">{{ record.artist|join(', ') }}</p>
+                                    <p class="text-muted mb-0">{{ record.formats[0].name }}</p>
+                                    {% if lastfm_data %}
+                                        {% for lastfm_album, lastfm_count in lastfm_data.top_albums %}
+                                            {% if lastfm_album == record.artist[0] + " - " + record.title %}
+                                            <p class="scrobble-count mb-0">{{ lastfm_count }} scrobbles</p>
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% endif %}
+                                </div>
+                            </a>
+                        </div>
                     </div>
                     {% endfor %}
                 </div>
@@ -159,6 +189,71 @@
             {% endfor %}
         </div>
     </div>
-    <script src="/js/charts.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const ctx = document.getElementById('monthlyChart').getContext('2d');
+            const { months, monthlyData, monthIds } = window.chartData;
+            
+            const chart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: months,
+                    datasets: [{
+                        label: 'Records Added',
+                        data: monthlyData,
+                        backgroundColor: '#1db954',
+                        borderColor: '#1db954',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                color: '#b3b3b3'
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: '#b3b3b3'
+                            },
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    onClick: (e, elements) => {
+                        if (elements.length > 0) {
+                            const index = elements[0].index;
+                            const month = months[index];
+                            const monthId = monthIds[month];
+                            console.log('Clicking month:', month, 'Link:', monthId);
+                            const monthElement = document.querySelector(`#${monthId}`);
+                            if (monthElement) {
+                                monthElement.scrollIntoView({ behavior: 'smooth' });
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Add pointer cursor to bars
+            ctx.canvas.style.cursor = 'pointer';
+        });
+    </script>
 </body>
 </html>
