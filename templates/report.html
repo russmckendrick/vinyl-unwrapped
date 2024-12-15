@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vinyl Unwrapped {{ year }}</title>
-    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="../static/css/style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
@@ -13,180 +13,206 @@
             <h1>Vinyl Unwrapped {{ year }}</h1>
         </header>
 
-        <div class="stats-overview">
+        <!-- Discogs Section -->
+        <section class="stats-section">
+            <h2 class="stats-section-title">Your Vinyl Collection</h2>
+            
             <div class="stat-cards">
                 <div class="total-records">
                     <h2>{{ stats.total_records }}</h2>
-                    <p>Records Added</p>
+                    <p>Record{% if stats.total_records != 1 %}s{% endif %} Added</p>
                 </div>
-                {% if lastfm_data %}
+            </div>
+
+            <div class="chart-container">
+                <canvas id="monthlyAdditionsChart"></canvas>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Top Labels</h3>
+                    <ul class="stat-list">
+                        {% for label, count in stats.top_labels.items() %}
+                        <li>
+                            <span class="stat-label">{{ label }}</span>
+                            <span class="stat-value">{{ count }}</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                <div class="stat-card">
+                    <h3>Top Formats</h3>
+                    <ul class="stat-list">
+                        {% for format, count in stats.top_formats.items() %}
+                        <li>
+                            <span class="stat-label">{{ format }}</span>
+                            <span class="stat-value">{{ count }}</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Last.fm Section -->
+        <section class="stats-section lastfm">
+            <h2 class="stats-section-title">Your Listening History</h2>
+            
+            <div class="stat-cards">
                 <div class="total-scrobbles">
                     <h2>{{ "{:,}".format(lastfm_data.total_scrobbles) }}</h2>
                     <p>Total Scrobbles</p>
                 </div>
-                {% endif %}
-            </div>
-            <div class="chart-container">
-                <canvas id="monthlyChart"></canvas>
-            </div>
-        </div>
-
-        <div class="stats-grid">
-            {% if lastfm_data %}
-            <div class="stat-card">
-                <h3>Most Listened Artists</h3>
-                <ul class="stat-list">
-                    {% for artist, count in lastfm_data.top_artists %}
-                    <li>
-                        <span class="stat-label">{{ artist }}</span>
-                        <span class="stat-value">{{ "{:,}".format(count) }}</span>
-                    </li>
-                    {% endfor %}
-                </ul>
             </div>
 
-            <div class="stat-card">
-                <h3>Most Played Albums</h3>
-                <ul class="stat-list">
-                    {% for album, count in lastfm_data.top_albums %}
-                    <li>
-                        <span class="stat-label">{{ album }}</span>
-                        <span class="stat-value">{{ "{:,}".format(count) }}</span>
-                    </li>
-                    {% endfor %}
-                </ul>
-            </div>
-            {% endif %}
-
-            <div class="stat-card">
-                <h3>Top Genres</h3>
-                <ul class="stat-list">
-                    {% for genre, count in stats.top_genres.items() %}
-                    <li>
-                        <span class="stat-label">{{ genre }}</span>
-                        <span class="stat-value">{{ count }}</span>
-                    </li>
-                    {% endfor %}
-                </ul>
-            </div>
-
-            <div class="stat-card">
-                <h3>Top Styles</h3>
-                <ul class="stat-list">
-                    {% for style, count in stats.top_styles.items() %}
-                    <li>
-                        <span class="stat-label">{{ style }}</span>
-                        <span class="stat-value">{{ count }}</span>
-                    </li>
-                    {% endfor %}
-                </ul>
-            </div>
-
-            <div class="stat-card">
-                <h3>Top Labels</h3>
-                <ul class="stat-list">
-                    {% for label, count in stats.top_labels.items() %}
-                    <li>
-                        <span class="stat-label">{{ label }}</span>
-                        <span class="stat-value">{{ count }}</span>
-                    </li>
-                    {% endfor %}
-                </ul>
-            </div>
-
-            <div class="stat-card">
-                <h3>Formats</h3>
-                <ul class="stat-list">
-                    {% for format, count in stats.top_formats.items() %}
-                    <li>
-                        <span class="stat-label">{{ format }}</span>
-                        <span class="stat-value">{{ count }}</span>
-                    </li>
-                    {% endfor %}
-                </ul>
-            </div>
-        </div>
-
-        <div class="top-artists">
-            <h2>{{ year }}'s Most Collected Artists</h2>
-            <div class="records-grid">
-                {% for artist in stats.top_artists %}
-                <div class="artist-card">
-                    <a href="{{ artist.records[0].artist_uri }}" target="_blank" class="artist-link">
-                        {% if artist.records[0].artist_image %}
-                        <img src="{{ artist.records[0].artist_image }}" alt="{{ artist.name }}" width="300" height="300">
-                        {% else %}
-                        <img src="https://placehold.co/300x300/1db954/ffffff?text={{ artist.name|replace(' ', '+')|urlencode }}" alt="{{ artist.name }}" width="300" height="300">
-                        {% endif %}
-                        <div class="artist-info">
-                            <h4>{{ artist.name }}</h4>
-                            <p class="record-count">{{ artist.count }} record{% if artist.count > 1 %}s{% endif %}</p>
-                            {% if lastfm_data %}
-                                {% for lastfm_artist, lastfm_count in lastfm_data.top_artists %}
-                                    {% if lastfm_artist == artist.name %}
-                                    <p class="scrobble-count">{{ "{:,}".format(lastfm_count) }} scrobbles</p>
-                                    {% endif %}
-                                {% endfor %}
-                            {% endif %}
-                        </div>
-                    </a>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
-
-        <div class="collection-by-month">
-            <h2>My {{ year }} Collection</h2>
-            {% for month in stats.months %}
-                {% if month in stats.records_by_month %}
-                <div id="{{ stats.month_ids[month] }}" class="month-section">
-                    <h3>{{ month }} <span class="record-count">({{ stats.records_by_month[month]|length }} record{% if stats.records_by_month[month]|length > 1 %}s{% endif %})</span></h3>
-                    <div class="month-records">
-                        <div class="records-grid">
-                            {% for record in stats.records_by_month[month] %}
-                            <div class="record-card">
-                                <a href="{{ record.album_uri }}" target="_blank" class="album-link">
-                                    <div class="record-image">
-                                        <img src="{{ record.cover_image }}" alt="{{ record.title }}">
-                                    </div>
-                                    <div class="record-info">
-                                        <h4>{{ record.title }}</h4>
-                                        <p class="artist-name">{{ record.artist|join(', ') }}</p>
-                                        <p class="format">{{ record.formats[0].name }}</p>
-                                        {% if lastfm_data %}
-                                            {% for lastfm_album, lastfm_count in lastfm_data.top_albums %}
-                                                {% if lastfm_album == record.artist[0] + " - " + record.title %}
-                                                <p class="scrobble-count">{{ "{:,}".format(lastfm_count) }} scrobbles</p>
-                                                {% endif %}
-                                            {% endfor %}
-                                        {% endif %}
-                                    </div>
-                                </a>
+            <div class="lastfm-grid">
+                <div class="lastfm-stat-card">
+                    <h3>Most Played Artists</h3>
+                    <div class="scrobble-stats">
+                        {% for artist, count in lastfm_data.top_artists %}
+                        <div class="scrobble-stat">
+                            <div class="scrobble-stat-icon">
+                                {{ loop.index }}
                             </div>
-                            {% endfor %}
+                            <div class="scrobble-stat-info">
+                                <p class="scrobble-stat-title">{{ artist }}</p>
+                                <p class="scrobble-stat-value">{{ "{:,}".format(count) }} plays</p>
+                            </div>
                         </div>
+                        {% endfor %}
                     </div>
                 </div>
-                {% endif %}
-            {% endfor %}
-        </div>
+
+                <div class="lastfm-stat-card">
+                    <h3>Most Played Albums</h3>
+                    <div class="scrobble-stats">
+                        {% for album, count in lastfm_data.top_albums %}
+                        <div class="scrobble-stat">
+                            <div class="scrobble-stat-icon">
+                                {{ loop.index }}
+                            </div>
+                            <div class="scrobble-stat-info">
+                                <p class="scrobble-stat-title">{{ album }}</p>
+                                <p class="scrobble-stat-value">{{ "{:,}".format(count) }} plays</p>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="lastfm-chart">
+                <canvas id="monthlyScrobblesChart"></canvas>
+            </div>
+        </section>
 
         <footer>
-            <p>Generated on {{ generated_date }}</p>
-            {% if lastfm_data %}
-            <p>Last.fm data fetched on {{ lastfm_data.fetched_at }}</p>
-            {% endif %}
+            <p>Generated with ❤️ by Vinyl Unwrapped</p>
         </footer>
     </div>
 
     <script>
-        // Store chart data in a global object to avoid conflicts
-        window.chartData = {
-            months: {{ stats.months|tojson }},
-            monthlyData: {{ stats.monthly_data|tojson }},
-            monthIds: {{ stats.month_ids|tojson|safe }}
-        };
+        // Monthly Additions Chart (Bar Chart)
+        const monthlyAdditionsCtx = document.getElementById('monthlyAdditionsChart').getContext('2d');
+        new Chart(monthlyAdditionsCtx, {
+            type: 'bar',
+            data: {
+                labels: {{ stats.months|tojson }},
+                datasets: [{
+                    label: 'Records Added',
+                    data: {{ stats.monthly_data|tojson }},
+                    backgroundColor: '#1db954',
+                    borderColor: '#1db954',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            color: '#ffffff'
+                        },
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            color: '#ffffff'
+                        },
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#ffffff'
+                        }
+                    }
+                }
+            }
+        });
+
+        {% if lastfm_data %}
+        // Monthly Scrobbles Chart (Line Chart with Area)
+        const monthlyScrobblesCtx = document.getElementById('monthlyScrobblesChart').getContext('2d');
+        const monthlyScrobbleData = Array(12).fill(0); // Initialize array with 12 zeros for each month
+        
+        // Calculate monthly totals from the scrobbles data
+        {% for artist, count in lastfm_data.top_artists %}
+        monthlyScrobbleData[new Date().getMonth()] += {{ count }};
+        {% endfor %}
+
+        new Chart(monthlyScrobblesCtx, {
+            type: 'line',
+            data: {
+                labels: {{ stats.months|tojson }},
+                datasets: [{
+                    label: 'Monthly Scrobbles',
+                    data: monthlyScrobbleData,
+                    backgroundColor: 'rgba(213, 16, 7, 0.2)',
+                    borderColor: '#D51007',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            color: '#ffffff'
+                        },
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            color: '#ffffff'
+                        },
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#ffffff'
+                        }
+                    }
+                }
+            }
+        });
+        {% endif %}
     </script>
-    <script src="/js/charts.js"></script>
 </body>
 </html>

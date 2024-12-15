@@ -4,6 +4,8 @@
     --spotify-white: #ffffff;
     --spotify-gray: #282828;
     --spotify-light-gray: #b3b3b3;
+    --lastfm-red: #D51007;
+    --lastfm-dark-red: #a30d06;
 }
 
 body {
@@ -56,8 +58,12 @@ header h1 {
 }
 
 .total-scrobbles {
-    background-color: var(--spotify-gray);
-    border: 2px solid var(--spotify-green);
+    background-color: var(--lastfm-red);
+    border: none;
+}
+
+.total-scrobbles:hover {
+    background-color: var(--lastfm-dark-red);
 }
 
 .total-records h2, .total-scrobbles h2 {
@@ -198,6 +204,93 @@ header h1 {
     color: var(--spotify-light-gray);
     font-size: 1rem;
     font-weight: normal;
+}
+
+.stats-section {
+    margin-bottom: 4rem;
+}
+
+.stats-section-title {
+    color: var(--spotify-white);
+    font-size: 2rem;
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.stats-section.lastfm {
+    background-color: rgba(213, 16, 7, 0.1);
+    padding: 2rem;
+    border-radius: 15px;
+    margin-top: 4rem;
+}
+
+.stats-section.lastfm .stats-section-title {
+    color: var(--lastfm-red);
+}
+
+.lastfm-stat-card {
+    background-color: rgba(213, 16, 7, 0.1);
+    padding: 1.5rem;
+    border-radius: 10px;
+    border: 1px solid var(--lastfm-red);
+}
+
+.lastfm-stat-card h3 {
+    color: var(--lastfm-red);
+    margin-top: 0;
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+}
+
+.lastfm-chart {
+    background-color: rgba(213, 16, 7, 0.05);
+    padding: 2rem;
+    border-radius: 10px;
+    border: 1px solid var(--lastfm-red);
+    margin-top: 2rem;
+}
+
+.lastfm-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-bottom: 3rem;
+}
+
+.scrobble-stat {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    background-color: rgba(213, 16, 7, 0.1);
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+.scrobble-stat-icon {
+    width: 40px;
+    height: 40px;
+    background-color: var(--lastfm-red);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1rem;
+}
+
+.scrobble-stat-info {
+    flex-grow: 1;
+}
+
+.scrobble-stat-title {
+    font-size: 0.9rem;
+    color: var(--spotify-light-gray);
+    margin: 0;
+}
+
+.scrobble-stat-value {
+    font-size: 1.2rem;
+    color: var(--spotify-white);
+    margin: 0;
 }
 
 footer {
